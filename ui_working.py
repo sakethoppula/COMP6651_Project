@@ -4,6 +4,7 @@ from dash import html
 import networkx as nx
 import pandas as pd
 import plotly.graph_objs as go
+import numpy as np
 
 # Create a Dash app
 app = dash.Dash(__name__)
@@ -20,31 +21,51 @@ app.layout = html.Div([
     dcc.Graph(id='graph')
 ])
 
+def check_colors(colors, lis):
+    for i in lis:
+        if i in colors:
+            colors.remove(i)
+    return colors
+
 def Firstfit(g):
     color_dict = {}
     visited = set()
-    graph = {}
-    for node in g.nodes():
+    graph = []
+    print(g.edges())
+    edges = list(g.edges())    
+    for a in g.edges():
+        edges.append((a[1],a[0]))
+    for node in range(0,len(g.nodes())):
         neighbour = []
-        for edge in g.edges():
+        for edge in edges:
             if (edge[0] == node):
                 neighbour.append(edge[1])
-        graph[node] = neighbour
+        graph.append(neighbour)
     print (graph)       
-    def dfs(vertex, color):
-        visited.add(vertex)
-        color_dict[vertex] = color
-        for neighbor in graph[vertex]:
-            if neighbor not in visited:
-                dfs(neighbor, 1 - color)
-            elif color_dict[neighbor] == color:
-                raise Exception("Graph is not bipartite")
+    partial_graph = []
+    vertex_colors = dict()
+    for i in range(len(g.edges())):
+        vertex_colors[i] = -1
 
-    for vertex in graph.keys():
-        if vertex not in visited:
-            dfs(vertex, 0)
+    V = len(g.edges())
+    C = list(np.arange(0,V-1))
+    C = sorted(C, reverse=True)
+    colors = C.copy()
 
-    return color_dict
+    # Assign colors to remaining V-1 vertices
+    for u in range(0, V-1):
+        partial_graph.append(u)
+        temp = []
+        print(u)
+        for i in graph[u]:
+            if i in partial_graph:
+                temp.append(vertex_colors[i])
+        result = check_colors(colors, temp)
+        vertex_colors[u] = result.pop()
+        colors = C.copy()
+
+
+    return vertex_colors
 
 
 
