@@ -20,52 +20,30 @@ app.layout = html.Div([
     dcc.Graph(id='graph')
 ])
 
-def Firstfit(graph):
-    """
-    Assigns colors to vertices in a bipartite graph using the First Fit algorithm.
-    """
-    # Partition the vertices of the graph into two sets
-    set_A = set()
-    set_B = set()
-    for vertex in graph:
-        if vertex % 2 == 0:
-            set_A.add(vertex)
-        else:
-            set_B.add(vertex)
-   
-    # Initialize an empty color set and an empty dictionary to keep track of the colors assigned to each vertex
-    colors = set()
+def Firstfit(g):
     color_dict = {}
-   
-    # Assign colors to vertices in set A
-    for vertex in set_A:
-        # Find the first available color
-        available_colors = colors.copy()
-        for neighbor in graph[vertex]:
-            if neighbor in set_B and neighbor in color_dict:
-                available_colors.discard(color_dict[neighbor])
-        if available_colors:
-            color = min(available_colors)
-        else:
-            color = len(colors) + 1
-            colors.add(color)
+    visited = set()
+    graph = {}
+    for node in g.nodes():
+        neighbour = []
+        for edge in g.edges():
+            if (edge[0] == node):
+                neighbour.append(edge[1])
+        graph[node] = neighbour
+    print (graph)       
+    def dfs(vertex, color):
+        visited.add(vertex)
         color_dict[vertex] = color
-   
-    # Assign colors to vertices in set B
-    for vertex in set_B:
-        # Find the first available color
-        available_colors = colors.copy()
         for neighbor in graph[vertex]:
-            if neighbor in set_A and neighbor in color_dict:
-                available_colors.discard(color_dict[neighbor])
-        if available_colors:
-            color = min(available_colors)
-        else:
-            color = len(colors) + 1
-            colors.add(color)
-        color_dict[vertex] = color
-   
-    # Return the list of colors assigned to each vertex
+            if neighbor not in visited:
+                dfs(neighbor, 1 - color)
+            elif color_dict[neighbor] == color:
+                raise Exception("Graph is not bipartite")
+
+    for vertex in graph.keys():
+        if vertex not in visited:
+            dfs(vertex, 0)
+
     return color_dict
 
 
