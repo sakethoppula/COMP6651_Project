@@ -14,7 +14,7 @@ G = nx.Graph()
 
 # Define the app layout
 app.layout = html.Div([
-    html.H1('GRAPH GENERATOR COMP6551'),
+    html.H1('GRAPH COLORING BY FIRSTFIT - COMP6551'),
     dcc.Input(id='input-nodes', type='text', placeholder='Enter node IDs separated by commas'),
     dcc.Input(id='input-edges', type='text', placeholder='Enter edges separated by commas'),
     html.Button(id='submit-button', n_clicks=0, children='Submit'),
@@ -89,6 +89,22 @@ def update_graph(n_clicks, input_nodes, input_edges):
         print(G.edges())
         output = Firstfit(G)
         print(output)
+        import random
+
+        def generate_hex_color(num_colors):
+            # Generate a list of random hex color values
+            hex_colors = []
+            for i in range(num_colors):
+                hex_colors.append('#{:06x}'.format(random.randint(0, 256**3-1)))
+            return hex_colors
+
+        # Generate a list of 5 random hex color values
+        num_colors = len(set(list(output.values())[:-1]))
+        hex_colors = generate_hex_color(num_colors)
+        colors = []
+        for a in list(output.values())[:-1]:
+            colors.append(hex_colors[a])
+        # print(hex_colors)
         # Create a Plotly figure from the NetworkX graph
         pos = nx.spring_layout(G)
         edge_trace = go.Scatter(
@@ -107,8 +123,8 @@ def update_graph(n_clicks, input_nodes, input_edges):
                 showscale=True,
                 colorscale='YlGnBu',
                 reversescale=True,
-                color=[],
-                size=10,
+                color=colors,
+                size=30,
                 colorbar=dict(
                     thickness=15,
                     title='Node Connections',
